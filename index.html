@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>공부 앱</title>
+<style>
+  body { font-family: Arial; padding: 20px; }
+  h1 { color: #2c3e50; }
+  button { padding: 10px 20px; margin: 5px; }
+  #log { margin-top: 20px; }
+</style>
+</head>
+<body>
+<h1>공부 앱</h1>
+
+<h2>타이머: <span id="timer">25:00</span></h2>
+<button id="startBtn">시작</button>
+<button id="resetBtn">리셋</button>
+
+<h2>과목 체크</h2>
+<label><input type="checkbox" id="math"> 수학</label><br>
+<label><input type="checkbox" id="english"> 영어</label><br>
+<label><input type="checkbox" id="science"> 과학</label>
+
+<div id="log">
+  <h2>공부 기록</h2>
+  <ul id="studyLog"></ul>
+</div>
+
+<script>
+let minutes = 25;
+let seconds = 0;
+let timerInterval = null;
+let sessionMinutes = 0;
+let sessionSeconds = 0;
+
+function updateTimerDisplay() {
+  let m = minutes.toString().padStart(2,'0');
+  let s = seconds.toString().padStart(2,'0');
+  document.getElementById('timer').textContent = `${m}:${s}`;
+}
+
+function addStudyLog() {
+  let subjects = [];
+  if(document.getElementById('math').checked) subjects.push('수학');
+  if(document.getElementById('english').checked) subjects.push('영어');
+  if(document.getElementById('science').checked) subjects.push('과학');
+
+  if(subjects.length === 0) subjects.push('기타');
+
+  let logItem = document.createElement('li');
+  logItem.textContent = `세션: ${sessionMinutes}분 ${sessionSeconds}초 - 과목: ${subjects.join(', ')}`;
+  document.getElementById('studyLog').appendChild(logItem);
+
+  // 세션 초기화
+  sessionMinutes = 0;
+  sessionSeconds = 0;
+}
+
+document.getElementById('startBtn').addEventListener('click', () => {
+  if(timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    document.getElementById('startBtn').textContent = '시작';
+    addStudyLog();
+  } else {
+    timerInterval = setInterval(() => {
+      // 메인 타이머
+      if(seconds === 0){
+        if(minutes === 0){
+          clearInterval(timerInterval);
+          alert("시간 종료!");
+          addStudyLog();
+          minutes = 25;
+          seconds = 0;
+          updateTimerDisplay();
+          document.getElementById('startBtn').textContent = '시작';
+          return;
+        } else {
+          minutes--;
+          seconds = 59;
+        }
+      } else {
+        seconds--;
+      }
+      updateTimerDisplay();
+
+      // 세션 시간 누적
+      sessionSeconds++;
+      if(sessionSeconds >= 60) {
+        sessionMinutes++;
+        sessionSeconds = 0;
+      }
+
+    }, 1000);
+    document.getElementById('startBtn').textContent = '멈춤';
+  }
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  clearInterval(timerInterval);
+  timerInterval = null;
+  minutes = 25;
+  seconds = 0;
+  sessionMinutes = 0;
+  sessionSeconds = 0;
+  updateTimerDisplay();
+  document.getElementById('startBtn').textContent = '시작';
+});
+</script>
+</body>
+</html>
